@@ -12,7 +12,6 @@ class BMCCLens:
 
     bmcc_camera = None
     lens_api_client = None
-    try_when_disconnected = False
 
     aperture_update_timestamp = 0
     continuous_aperture_auto_exposure = Enums.UNKNOWN
@@ -48,15 +47,12 @@ class BMCCLens:
         return self.iris_stops
 
     def get_iris(self) -> float:
-        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
             result=self.lens_api_client.lens_iris_get()
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         self.aperture_update_timestamp=time.time()
         self.continuous_aperture_auto_exposure=result.continuous_aperture_auto_exposure
@@ -66,7 +62,7 @@ class BMCCLens:
         return result.aperture_stop
 
     def set_iris(self, aperture_stop:float=None, normalised:float=None, aperture_number:int=None) -> int:
-        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         if aperture_stop is None and normalised is None and aperture_number is None:
             logging.warning("One of apertureStop, normalised, or apertureNumber must be set")
@@ -77,23 +73,17 @@ class BMCCLens:
             body = LensIrisBody(aperture_stop, normalised, aperture_number)
             result = self.lens_api_client.lens_iris_put(body=body)
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         return 0
 
     def get_zoom(self) -> float:
-        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
             result = self.lens_api_client.lens_zoom_get()
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         self.focal_length_update_timestamp = time.time()
         self.focal_length = result.focal_length
@@ -101,7 +91,7 @@ class BMCCLens:
         return result.focal_length
 
     def set_zoom(self,focal_length:float=None,normalised:float=None) -> int:
-        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         if focal_length is None and normalised is None:
             logging.warning("One of focal_length or normalised must be set")
@@ -111,53 +101,41 @@ class BMCCLens:
             body = LensZoomBody(focal_length, normalised)
             result = self.lens_api_client.lens_iris_put(body=body)
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         return 0
 
     def get_focus(self) -> float:
-        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
             result = self.lens_api_client.lens_focus_get()
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         self.focus_update_timestamp = time.time()
         self.focus = result.focus
         return result.focus
 
     def set_focus(self, focus:float) -> int:
-        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
             from LensControl.models.lens_focus_body import LensFocusBody
             body = LensFocusBody(focus)
             result = self.lens_api_client.lens_focus_put(body=body)
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         return 0
 
     def do_auto_focus(self) -> int:
-        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
 
         try:
             result = self.lens_api_client.lens_focus_do_auto_focus_put()
         except Exception as ex:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            logging.error(message)
-            self.bmcc_camera.mark_disconnected()
+            self.bmcc_camera.handle_exception(ex)
             return -1
         return 0

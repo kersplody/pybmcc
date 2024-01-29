@@ -7,16 +7,22 @@ import time
 import requests
 from PyBMCC.BMCCTransport import BMCCTransport
 from PyBMCC.BMCCLens import BMCCLens
+from PyBMCC.BMCCSystem import BMCCSystem
 import PyBMCC.Enums as Enums
+import logging
 
 class BMCCCamera:
     host_or_ipaddr = None
     name = None
     atem_id = 0
+
     lens = None
     transport = None
+    system = None
+
     state = Enums.CameraState.UNKNOWN
     state_update_timestamp = 0
+    try_when_disconnected = False
 
     def __init__(self, host_or_ipaddr, name=None, atem_id=1):
         self.host_or_ipaddr=host_or_ipaddr
@@ -26,6 +32,7 @@ class BMCCCamera:
         self.atem_id = atem_id
         self.lens = BMCCLens(self)
         self.transport = BMCCTransport(self)
+        self.system = BMCCSystem(self)
         self.update_state()
     def test_connection(self):
         try:
@@ -36,6 +43,12 @@ class BMCCCamera:
                 self.mark_disconnected()
         except requests.ConnectionError:
             self.mark_disconnected()
+
+    def handle_exception(self,ex):
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        logging.error(message)
+        self.mark_disconnected()
 
     def mark_disconnected(self):
         self.state = Enums.CameraState.DISCONNECTED
@@ -50,6 +63,10 @@ class BMCCCamera:
         self.get_iris
         self.lens.get_zoom()
         self.lens.get_focus()
+        self.transport.get_status()
+        self.transport.get_record()
+        self.system.get_supported_codec_formats()
+        self.system.get_format()
 
     # convenience methods for BMCCLens
     def get_iris(self) -> float:

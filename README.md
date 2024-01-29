@@ -73,6 +73,7 @@ A Python library to monitor, command, and control network enabled Blackmagic Des
 - SDI API/ATEM COMMANDS are not implemented
 - HTTPS, authtentication, and custom certificates are currently not supported, support in planned in the near future
 - Preset Controls are mostly broken. This will be addressed when Blackmagic Design provides a patch or workaround
+- Any API call that returns a dict is at risk of being updated in a future version
 
 ## Blackmagic Camera REST API Swagger Erreta
 
@@ -119,3 +120,5 @@ This section documents erreta in version 0.1.0 of the Blackmagic REST API
 **SystemControl**
 
 - All methods are misssing an OpenAPI operationId
+- /system GET: status 204 is returned with no data which is not defined in the API specification
+- $ref: "#/components/schemas/FrameRate" has sibling properties which are ignored by the OpenAPI specification
