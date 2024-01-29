@@ -27,12 +27,11 @@ class BMCCCamera:
     state_update_timestamp = 0
     try_when_disconnected = False
 
-    def __init__(self, host_or_ipaddr, name=None, atem_id=1):
+    def __init__(self, host_or_ipaddr, name=None):
         self.host_or_ipaddr=host_or_ipaddr
         if name is None:
             name = randomword(8)
         self.name = name
-        self.atem_id = atem_id
         self.lens = BMCCLens(self)
         self.transport = BMCCTransport(self)
         self.system = BMCCSystem(self)
@@ -49,11 +48,12 @@ class BMCCCamera:
         except requests.ConnectionError:
             self.mark_disconnected()
 
-    def handle_exception(self,ex):
+    def handle_exception(self,ex,disconnect=True):
         template = "An exception of type {0} occurred. Arguments:\n{1!r}"
         message = template.format(type(ex).__name__, ex.args)
         logging.error(message)
-        self.mark_disconnected()
+        if disconnect:
+            self.mark_disconnected()
 
     def mark_disconnected(self):
         self.state = Enums.CameraState.DISCONNECTED
@@ -72,6 +72,7 @@ class BMCCCamera:
         self.transport.get_record()
         self.system.get_supported_codec_formats()
         self.system.get_format()
+        self.system.get_atem_id()
 
     # convenience methods for BMCCLens
     def get_iris(self) -> float:

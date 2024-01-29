@@ -27,6 +27,19 @@ def system_test(camera):
     logging.info(MSG1.format("timeline get", camera.timeline.get_timeline()))
     logging.info(MSG1.format("timeline get", camera.timeline.append_timeline(15)))
     logging.info(MSG1.format("timeline delete", camera.timeline.delete_timeline()))
+
+    #ATEM ID
+    id=camera.system.get_atem_id()
+    logging.info(MSG1.format("ATEM ID", id))
+    logging.info(MSG2.format("ATEM ID", 5, camera.system.set_atem_id(5)))
+    time.sleep(1)
+    logging.info(MSG1.format("ATEM ID", camera.system.get_atem_id()))
+    logging.info(MSG2.format("ATEM ID", id, camera.system.set_atem_id(id)))
+    time.sleep(1)
+    logging.info(MSG1.format("ATEM ID", camera.system.get_atem_id()))
+
+    #CLIPS
+    logging.info(MSG1.format("clips", camera.system.get_clips()))
 def main():
     if len(sys.argv) < 2:
         print("USAGE: TransportTest.py CAMERA_IP_OR_HOSTNAME")

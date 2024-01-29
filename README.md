@@ -81,45 +81,56 @@ This section documents erreta in version 0.1.0 of the Blackmagic REST API
 
 **AudioControl:**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **MediaControl:**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **TimelineControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **ColorCorrection**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **TransportControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 - /transports/0/timecode/source GET: 'source' parameter is used, not 'timecode'
 
 **EventControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 - /event/list GET: an array of values is returned, not a property with an array as specified
 
 **PresetControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **VideoControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 
 **LensControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 - /lens/focus PUT,GET: 'normalized' parameter is used, not 'focus'
 
 **SystemControl**
 
-- All methods are misssing an OpenAPI operationId
+- All methods are missing an OpenAPI operationId
 - /system GET: status 204 is returned with no data which is not defined in the API specification
 - $ref: "#/components/schemas/FrameRate" has sibling properties which are ignored by the OpenAPI specification
+
+**CameraControl**
+
+- API is not documented due to a missing schema
+- /camera/id GET: returns ATEM_ID, a number between 1-254 (typically 1-100)
+- /camera/id PUT: sets ATEM_ID, a number between 1-254 (typically 1-100)
+
+**ClipsControl**
+
+- API is not documented due to a missing schema
+- /clips/list GET: returns the list of clips on the camera

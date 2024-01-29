@@ -3,6 +3,7 @@
 
 import SystemControl.api.default_api as default_api
 from typing import Union
+import json
 import PyBMCC.Enums as Enums
 from SystemControl.rest import ApiException
 import time
@@ -23,6 +24,8 @@ class BMCCSystem:
     off_speed_frame_rate = 0.0
     max_off_speed_frame_rate = 0.0
     min_off_speed_frame_rate = 0.0
+
+    atem_id = -1
 
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
@@ -187,4 +190,118 @@ class BMCCSystem:
             return -1
         if self.system_api_client.api_client.last_response.status==501:
             return -4
+        return result
+
+    ### Bonus undocumented API features
+    def get_atem_id(self):
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            header_params = {}
+            header_params['Content-Type'] = self.system_api_client.api_client.select_header_content_type(  # noqa: E501
+                ['application/json'])
+
+            result=self.system_api_client.api_client.call_api(
+                '/camera/id', 'GET',
+                {},
+                [],
+                {},
+                body=None,
+                post_params=[],
+                files={},
+                response_type=None,  # noqa: E501
+                auth_settings=[],
+                async_req=None,
+                _return_http_data_only=True,
+                _preload_content=True,
+                _request_timeout=None,
+                collection_formats={})
+        except Exception as ex:
+            import traceback
+            print(traceback.format_exc())
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        if self.system_api_client.api_client.last_response.status==501:
+            return -4
+
+        try:
+            result=self.system_api_client.api_client.last_response.data
+            id=json.loads(result)['id']
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex,False)
+            return -1
+        self.atem_id=id
+        return id
+
+    def set_atem_id(self,atem_id:int):
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            body={}
+            body['id']=atem_id
+
+            header_params = {}
+            header_params['Content-Type'] = 'application/json'
+
+            result=self.system_api_client.api_client.call_api(
+                '/camera/id', 'PUT',
+                {},
+                [],
+                {},
+                body=body,
+                post_params=[],
+                files={},
+                response_type=None,  # noqa: E501
+                auth_settings=[],
+                async_req=None,
+                _return_http_data_only=True,
+                _preload_content=True,
+                _request_timeout=None,
+                collection_formats={})
+        except Exception as ex:
+            import traceback
+            print(traceback.format_exc())
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        if self.system_api_client.api_client.last_response.status==501:
+            return -4
+        return 0
+
+    def get_clips(self):
+        if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            header_params = {}
+            header_params['Content-Type'] = self.system_api_client.api_client.select_header_content_type(  # noqa: E501
+                ['application/json'])
+
+            result=self.system_api_client.api_client.call_api(
+                '/clips/list', 'GET',
+                {},
+                [],
+                {},
+                body=None,
+                post_params=[],
+                files={},
+                response_type=None,  # noqa: E501
+                auth_settings=[],
+                async_req=None,
+                _return_http_data_only=True,
+                _preload_content=True,
+                _request_timeout=None,
+                collection_formats={})
+        except Exception as ex:
+            import traceback
+            print(traceback.format_exc())
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        if self.system_api_client.api_client.last_response.status==501:
+            return -4
+
+        try:
+            result=self.system_api_client.api_client.last_response.data
+            result=json.loads(result)
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex,False)
+            return -1
         return result
