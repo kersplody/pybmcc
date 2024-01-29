@@ -32,7 +32,7 @@ class TimecodeSource(object):
     }
 
     attribute_map = {
-        'timecode': 'timecode'
+        'timecode': 'source'
     }
 
     def __init__(self, timecode=None):  # noqa: E501

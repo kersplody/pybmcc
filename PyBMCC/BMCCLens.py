@@ -2,9 +2,12 @@
 # coding: utf-8
 
 import LensControl.api.default_api as default_api
+from decimal import Decimal, ROUND_HALF_UP
 import PyBMCC.Enums as Enums
 import logging
 import time
+
+
 class BMCCLens:
 
     bmcc_camera = None
@@ -21,11 +24,28 @@ class BMCCLens:
     focal_length_normalised = -1
     focus_update_timestamp = -1
     focus = -1
+    iris_stops = []
 
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
         self.lens_api_client = default_api.DefaultApi()
         self.lens_api_client.api_client.configuration.host=f"http://{bmcc_camera.host_or_ipaddr}/control/api/v1"
+
+    def get_iris_stops(self) -> list[float]:
+        iris_stops=list()
+
+        self.set_iris(normalised=0.0)
+        time.sleep(.5)
+
+        for iris in [x * .05 for x in range(21)]:
+            self.set_iris(normalised=iris)
+            time.sleep(.25)
+            stop = float(Decimal(Decimal(self.get_iris()).quantize(Decimal('.1'),rounding=ROUND_HALF_UP)))
+            if stop not in iris_stops:
+                iris_stops.append(stop)
+
+        self.iris_stops=list(iris_stops)
+        return self.iris_stops
 
     def get_iris(self) -> float:
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
@@ -45,7 +65,7 @@ class BMCCLens:
         self.aperture_number=result.aperture_number
         return result.aperture_stop
 
-    def set_iris(self, aperture_stop=None, normalised=None, aperture_number=None) -> int:
+    def set_iris(self, aperture_stop:float=None, normalised:float=None, aperture_number:int=None) -> int:
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
         if aperture_stop is None and normalised is None and aperture_number is None:
@@ -64,7 +84,7 @@ class BMCCLens:
             return -1
         return 0
 
-    def get_zoom(self):
+    def get_zoom(self) -> float:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
         try:
@@ -80,7 +100,7 @@ class BMCCLens:
         self.focal_length_normalised = result.normalised
         return result.focal_length
 
-    def set_zoom(self,focal_length=None,normalised=None):
+    def set_zoom(self,focal_length:float=None,normalised:float=None) -> int:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
         if focal_length is None and normalised is None:
@@ -98,7 +118,7 @@ class BMCCLens:
             return -1
         return 0
 
-    def get_focus(self):
+    def get_focus(self) -> float:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
         try:
@@ -113,7 +133,7 @@ class BMCCLens:
         self.focus = result.focus
         return result.focus
 
-    def set_focus(self, focus):
+    def set_focus(self, focus:float) -> int:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
         try:
@@ -128,7 +148,7 @@ class BMCCLens:
             return -1
         return 0
 
-    def do_auto_focus(self):
+    def do_auto_focus(self) -> int:
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.try_when_disconnected:
             return -2
 

@@ -3,16 +3,18 @@
 
 import string
 import random
-import PyBMCC.BMCCLens as BMCCLens
-import PyBMCC.Enums as Enums
 import time
 import requests
+from PyBMCC.BMCCTransport import BMCCTransport
+from PyBMCC.BMCCLens import BMCCLens
+import PyBMCC.Enums as Enums
 
 class BMCCCamera:
     host_or_ipaddr = None
     name = None
     atem_id = 0
     lens = None
+    transport = None
     state = Enums.CameraState.UNKNOWN
     state_update_timestamp = 0
 
@@ -22,7 +24,8 @@ class BMCCCamera:
             name = randomword(8)
         self.name = name
         self.atem_id = atem_id
-        self.lens=BMCCLens(self)
+        self.lens = BMCCLens(self)
+        self.transport = BMCCTransport(self)
         self.update_state()
     def test_connection(self):
         try:
@@ -44,9 +47,44 @@ class BMCCCamera:
 
     def update_state(self):
         self.test_connection()
-        self.lens.get_iris()
+        self.get_iris
         self.lens.get_zoom()
         self.lens.get_focus()
-def randomword(length):
+
+    # convenience methods for BMCCLens
+    def get_iris(self) -> float:
+        return self.lens.get_iris()
+
+    def set_iris(self, aperture_stop:float=None, normalised:float=None, aperture_number:int=None) -> int:
+        return self.lens.set_iris(aperture_stop=aperture_stop, normalised=normalised, aperture_number=aperture_number)
+
+    def get_zoom(self) -> float:
+        return self.lens.get_zoom()
+
+    def set_zoom(self, focal_length:float=None, normalised:float=None) -> int:
+        return self.lens.set_zoom(focal_length=focal_length, normalised=normalised)
+
+    def get_focus(self) -> float:
+        return self.lens.get_focus()
+
+    def set_focus(self, focus:float) -> int:
+        return self.lens.set_focus(focus)
+
+    def do_auto_focus(self) -> int:
+        return self.lens.do_auto_focus()
+
+    def record_start(self,clip_name:str=None) -> int:
+        return self.transport.set_record(True,clip_name=clip_name)
+
+    def record_stop(self) -> int:
+        return self.transport.set_record(False)
+
+    def get_timecode(self) -> str:
+        return self.transport.get_timecode()
+
+    def is_recording(self) -> bool:
+        return self.transport.get_record()
+
+def randomword(length:int) -> str:
    letters = string.ascii_lowercase
    return ''.join(random.choice(letters) for i in range(length))
