@@ -23,7 +23,10 @@ def system_test(camera):
     logging.info(MSG1.format("video formats", camera.system.get_video_format()))
     logging.info(MSG1.format("format", camera.system.get_format()))
     logging.info(MSG2.format("format codec", "BRaw:Q4",camera.system.set_format(codec="BRaw:Q4")))
-
+    logging.info(MSG1.format("events", camera.event.get_events()))
+    logging.info(MSG1.format("timeline get", camera.timeline.get_timeline()))
+    logging.info(MSG1.format("timeline get", camera.timeline.append_timeline(15)))
+    logging.info(MSG1.format("timeline delete", camera.timeline.delete_timeline()))
 def main():
     if len(sys.argv) < 2:
         print("USAGE: TransportTest.py CAMERA_IP_OR_HOSTNAME")

@@ -103,6 +103,7 @@ This section documents erreta in version 0.1.0 of the Blackmagic REST API
 **EventControl**
 
 - All methods are misssing an OpenAPI operationId
+- /event/list GET: an array of values is returned, not a property with an array as specified
 
 **PresetControl**
 

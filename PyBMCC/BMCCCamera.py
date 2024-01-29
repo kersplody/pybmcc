@@ -8,6 +8,8 @@ import requests
 from PyBMCC.BMCCTransport import BMCCTransport
 from PyBMCC.BMCCLens import BMCCLens
 from PyBMCC.BMCCSystem import BMCCSystem
+from PyBMCC.BMCCEvent import BMCCEvent
+from PyBMCC.BMCCTimeline import BMCCTimeline
 import PyBMCC.Enums as Enums
 import logging
 
@@ -19,6 +21,7 @@ class BMCCCamera:
     lens = None
     transport = None
     system = None
+    event = None
 
     state = Enums.CameraState.UNKNOWN
     state_update_timestamp = 0
@@ -33,6 +36,8 @@ class BMCCCamera:
         self.lens = BMCCLens(self)
         self.transport = BMCCTransport(self)
         self.system = BMCCSystem(self)
+        self.event = BMCCEvent(self)
+        self.timeline = BMCCTimeline(self)
         self.update_state()
     def test_connection(self):
         try:

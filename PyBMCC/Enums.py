@@ -16,6 +16,7 @@ class CommandStauts(Enum):
     CAM_DISCONNECTED = -2
     BAD_ARGS = -3
     NOT_IMPLEMENTED_ON_CAMERA = -4
+    BAD_REQUEST = -5
 
 class TransportStatus(Enum):
     UNKNOWN = -1
