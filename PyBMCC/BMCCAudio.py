@@ -2,7 +2,6 @@
 # coding: utf-8
 
 import AudioControl.api.default_api as default_api
-from decimal import Decimal, ROUND_HALF_UP
 import PyBMCC.Enums as Enums
 from AudioControl.rest import ApiException
 import logging

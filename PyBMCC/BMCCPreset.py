@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import PresetControl.api.default_api as default_api
-from decimal import Decimal, ROUND_HALF_UP
+from PresetControl.rest import ApiException
 import PyBMCC.Enums as Enums
 import logging
 from typing import Union
@@ -19,19 +19,91 @@ class BMCCPreset:
         self.preset_api_client.api_client.configuration.host=f"http://{bmcc_camera.host_or_ipaddr}/control/api/v1"
 
     def get_presets(self):
-        return
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            result = self.preset_api_client.presets_get()
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return result
 
-    def upload_preset(self):
-        return
+    def upload_preset(self,presetBinary=None):
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            result = self.preset_api_client.presets_post(body=presetBinary)
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return 0
 
     def get_active_preset(self):
-        return
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            result = self.preset_api_client.presets_get()
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return result
 
-    def set_active_preset(self):
-        return
+    def set_active_preset(self,preset=None):
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            from PresetControl.models.active_preset import ActivePreset
+            body = ActivePreset(preset=preset)
+            result = self.preset_api_client.presets_active_put(body=body)
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return 0
 
-    def overwrite_preset(self):
-        return
+    def download_preset(self,preset_name:str):
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            result = self.preset_api_client.presets_preset_name_get(preset_name=preset_name)
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return result
 
-    def delete_preset(self):
-        return
+    def overwrite_preset(self,preset_name:str,preset=None):
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            from PresetControl.models.active_preset import ActivePreset
+            body = ActivePreset(preset=preset)
+            result = self.preset_api_client.presets_preset_name_put(body=body)
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return 0
+
+    def delete_preset(self,preset_name:str,preset=None):
+        if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
+            return -2
+        try:
+            from PresetControl.models.active_preset import ActivePreset
+            body = ActivePreset(preset=preset)
+            result = self.preset_api_client.presets_preset_name_delete(body=body)
+        except ApiException as ex:
+            return -4
+        except Exception as ex:
+            self.bmcc_camera.handle_exception(ex)
+            return -1
+        return 0
