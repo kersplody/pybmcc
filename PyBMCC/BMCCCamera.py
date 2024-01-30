@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+"""
+BMCCCamera: Blackmagic Camera Control API manager class.
+Part of the BMCCCamera library.
+"""
+
 import string
 import random
 import time
@@ -10,10 +15,19 @@ from PyBMCC.BMCCLens import BMCCLens
 from PyBMCC.BMCCSystem import BMCCSystem
 from PyBMCC.BMCCEvent import BMCCEvent
 from PyBMCC.BMCCTimeline import BMCCTimeline
+from PyBMCC.BMCCVideo import BMCCVideo
+from PyBMCC.BMCCAudio import BMCCAudio
+from PyBMCC.BMCCMedia import BMCCMedia
+from PyBMCC.BMCCColorCorrection import BMCCColorCorrection
+from PyBMCC.BMCCPreset import BMCCPreset
 import PyBMCC.Enums as Enums
 import logging
 
 class BMCCCamera:
+
+    """Blackmagic Camera manager
+    """
+
     host_or_ipaddr = None
     name = None
     atem_id = 0
@@ -22,6 +36,11 @@ class BMCCCamera:
     transport = None
     system = None
     event = None
+    video = None
+    audio = None
+    media = None
+    color_correction = None
+    preset = None
 
     state = Enums.CameraState.UNKNOWN
     state_update_timestamp = 0
@@ -37,6 +56,11 @@ class BMCCCamera:
         self.system = BMCCSystem(self)
         self.event = BMCCEvent(self)
         self.timeline = BMCCTimeline(self)
+        self.video = BMCCVideo(self)
+        self.audio = BMCCAudio(self)
+        self.media = BMCCMedia(self)
+        self.color_correction = BMCCColorCorrection(self)
+        self.preset = BMCCPreset(self)
         self.update_state()
     def test_connection(self):
         try:
@@ -73,6 +97,7 @@ class BMCCCamera:
         self.system.get_supported_codec_formats()
         self.system.get_format()
         self.system.get_atem_id()
+        self.audio.discover_channels()
 
     # convenience methods for BMCCLens
     def get_iris(self) -> float:

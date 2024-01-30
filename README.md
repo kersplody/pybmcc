@@ -82,8 +82,17 @@ This section documents erreta in version 0.1.0 of the Blackmagic REST API
 **AudioControl:**
 
 - All methods are missing an OpenAPI operationId
+- /audio/channel/{channelIndex}/input/description GET: description.capabilities is returned as an array. This is not in the API spec.
+- /audio/channel/{channelIndex}/supportedInputs GET: data is returned as an array, not as a channelIndex object as specified.
+- /audio/channel/{channelIndex}/phantomPower GET: object key returned is "enabled", not "phantom_power". This is not in the API spec.
+- /audio/channel/{channelIndex}/phantomPower SET: status code 204 is always returned with any input when not supported. API spec says this should return 400 or 404.
+- /audio/channel/{channelIndex}/padding GET: object key returned is "enabled", not "padding". This is not in the API spec.
+- /audio/channel/{channelIndex}/padding SET: status code 204 is always returned with any input when not supported. API spec says this should return 400 or 404.
+- /audio/channel/{channelIndex}/lowCutFilter GET: object key returned is "enabled", not "lowCutFilter". This is not in the API spec.
+- /audio/channel/{channelIndex}/lowCutFilter SET: status code 204 is always returned with any input when not supported. API spec says this should return 400 or 404.
 
-**MediaControl:**
+
+- **MediaControl:**
 
 - All methods are missing an OpenAPI operationId
 

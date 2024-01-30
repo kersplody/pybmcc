@@ -3,6 +3,7 @@
 
 import EventControl.api.default_api as default_api
 import PyBMCC.Enums as Enums
+from typing import Union
 
 class BMCCEvent:
 
@@ -14,7 +15,11 @@ class BMCCEvent:
         self.event_api_client = default_api.DefaultApi()
         self.event_api_client.api_client.configuration.host=f"http://{bmcc_camera.host_or_ipaddr}/control/api/v1"
 
-    def get_events(self):
+    def get_events(self) -> Union[int,list[str]]:
+        """Get the list of events that can be subscribed to using the websocket API.  # noqa: E501
+
+        :returns: A list of events that can be subscribed to or an error code
+        """
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
