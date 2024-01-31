@@ -74,6 +74,7 @@ A Python library to monitor, command, and control network enabled Blackmagic Des
 - HTTPS, authtentication, and custom certificates are currently not supported, support in planned in the near future
 - Preset Controls are mostly broken. This will be addressed when Blackmagic Design provides a patch or workaround
 - Any API call that returns a dict is at risk of being updated in a future version
+- Only 1 disk is supported in BMCCCamera functions
 
 ## Blackmagic Camera REST API Swagger Erreta
 

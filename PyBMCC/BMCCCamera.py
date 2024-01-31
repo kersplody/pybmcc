@@ -98,6 +98,7 @@ class BMCCCamera:
         self.system.get_format()
         self.system.get_atem_id()
         self.audio.discover_channels()
+        self.media.get_workingset()
 
     # convenience methods for BMCCLens
     def get_iris(self) -> float:
@@ -117,6 +118,12 @@ class BMCCCamera:
 
     def set_focus(self, focus:float) -> int:
         return self.lens.set_focus(focus)
+
+    def get_shutter(self) -> int:
+        return self.video.get_shutter().shutter_speed
+
+    def set_shutter(self,shutter_speed=None, shutter_angle=None) -> float:
+        return self.video.set_shutter(shutter_speed=shutter_speed, shutter_angle=shutter_angle)
 
     def do_auto_focus(self) -> int:
         return self.lens.do_auto_focus()

@@ -13,6 +13,12 @@ class BMCCMedia:
 
     bmcc_camera = None
     media_api_client = None
+    primary_disk_id = None
+    record_minutes = 0
+    total_space = 0
+    remaining_space = 0
+    clip_count = 0
+    disk_update_timestamp = 0
 
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
@@ -29,6 +35,12 @@ class BMCCMedia:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex)
             return -1
+        record_minutes = result.workingset[0].remaining_record_time
+        total_space = result.workingset[0].total_space
+        remaining_space = result.workingset[0].remaining_space
+        clip_count = result.workingset[0].clip_count
+        disk_update_timestamp = time.time()
+
         return result
 
     def get_active(self):
@@ -41,6 +53,7 @@ class BMCCMedia:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex)
             return -1
+        self.primary_disk_id = result.device_name
         return result
 
     def put_active(self,workingset_index=0):
@@ -91,7 +104,7 @@ class BMCCMedia:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex)
             return -1
-        return result
+        return result.key
 
     def do_device_format(self,device_name=None,key=None, filesystem=None, volume=None):
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
