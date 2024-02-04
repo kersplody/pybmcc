@@ -10,6 +10,7 @@ import string
 import random
 import time
 import requests
+import urllib
 from PyBMCC.BMCCTransport import BMCCTransport
 from PyBMCC.BMCCLens import BMCCLens
 from PyBMCC.BMCCSystem import BMCCSystem
@@ -64,12 +65,13 @@ class BMCCCamera:
         self.update_state()
     def test_connection(self):
         try:
-            r = requests.head(f"http://{self.host_or_ipaddr}/control/documentation.html")
+            url = f"http://{self.host_or_ipaddr}/control/documentation.html"
+            r = requests.head(url,timeout=1)
             if r.status_code == 400:
                 self.mark_connected()
             else:
                 self.mark_disconnected()
-        except requests.ConnectionError:
+        except requests.ConnectionError as ex:
             self.mark_disconnected()
 
     def handle_exception(self,ex,disconnect=True):
@@ -89,7 +91,7 @@ class BMCCCamera:
 
     def update_state(self):
         self.test_connection()
-        self.get_iris
+        self.lens.get_iris()
         self.lens.get_zoom()
         self.lens.get_focus()
         self.transport.get_status()
@@ -139,6 +141,18 @@ class BMCCCamera:
 
     def is_recording(self) -> bool:
         return self.transport.get_record()
+
+    def get_last_clip_url(self,http_url=True,https_url=False,smb_url=False,smb_path=False) -> str:
+        path=self.system.get_clips(only_last=True)
+        if path==-1:
+            return None
+        if http_url:
+            #return HTTP
+            escaped_path=urllib.parse.quote(path, safe='/', encoding=None, errors=None)
+            eps=escaped_path.split('/')
+            # http://10.0.11.203/mounts/usb/X9%20Pro/1706224651.braw
+            # http://10.0.11.203/mnt/usb16640/X9%20Pro/A010_02041219_C002.braw
+            return f"http://{self.host_or_ipaddr}/mounts/usb/{eps[3]}/{eps[4]}"
 
 def randomword(length:int) -> str:
    letters = string.ascii_lowercase

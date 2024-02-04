@@ -267,7 +267,7 @@ class BMCCSystem:
             return -4
         return 0
 
-    def get_clips(self):
+    def get_clips(self,only_last=False):
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
@@ -290,6 +290,9 @@ class BMCCSystem:
                 _preload_content=True,
                 _request_timeout=None,
                 collection_formats={})
+        except ApiException as ex:
+            # todo: handle more error states
+            return -1
         except Exception as ex:
             import traceback
             print(traceback.format_exc())
@@ -304,4 +307,14 @@ class BMCCSystem:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex,False)
             return -1
+        if only_last:
+            if 'clipList' not in result:
+                return -1
+            if len(result['clipList']) ==0:
+                return  -1
+            latest_clip_idx=-1
+            for clip in result['clipList']:
+                if clip['clipUniqueId']-1 > latest_clip_idx:
+                    latest_clip_idx=clip['clipUniqueId']-1
+            return result['clipList'][latest_clip_idx]['filePath']
         return result
