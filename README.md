@@ -23,7 +23,7 @@ A Python library to monitor, command, and control network enabled Blackmagic Des
 - HTTP should NOT be enabled with security
 
 ### Detailed Setup
-1. Install Blackmagic Camera Setup (v8.4+) on a Windows or Mac computer [https://www.blackmagicdesign.com/support/family/professional-cameras] (https://www.blackmagicdesign.com/support/family/professional-cameras)
+1. Install Blackmagic Camera Setup (v8.4+) on a Windows or Mac computer: https://www.blackmagicdesign.com/support/family/professional-cameras
 2. Power the camera and connect it via USB to the Mac or Windows computer
 3. Open Blackmagic Camera Setup ![BM_net_setup1](doc/images/BM_net_setup1.png)
 4. Connect to the camera, set the camera's name, click Set, then click Save.
