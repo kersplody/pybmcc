@@ -72,7 +72,6 @@ A Python library to monitor, command, and control network enabled Blackmagic Des
 
 ## Limitations
 - Async API is not yet implemented, support is planned in the near future
-- SDI API/ATEM COMMANDS are not implemented
 - HTTPS, authtentication, and custom certificates are currently not supported, support in planned in the near future
 - Preset Controls are mostly broken. This will be addressed when Blackmagic Design provides a patch or workaround
 - Any API call that returns a dict is at risk of being updated in a future version
