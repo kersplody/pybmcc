@@ -42,16 +42,31 @@ class BMCCCamera:
     media = None
     color_correction = None
     preset = None
+    control_ATEM_ipaddr = None
 
     state = Enums.CameraState.UNKNOWN
     state_update_timestamp = 0
     try_when_disconnected = False
 
-    def __init__(self, host_or_ipaddr, name=None):
+    def __init__(self, host_or_ipaddr, camera_name=None, control_ATEM_ipaddr=None, try_when_disconnected = False):
+        """Create BMCCCamera Camera Controller Object. This is the main class to control cameras
+
+        :param str host_or_ipaddr: the host name or IP address of the camera to control  (required)
+        :param str name: the name to assign the camera (e.g. studio camera A). If unassigned, a random unique name
+            will be generated  (optional)
+        :param str control_ATEM_ipaddr: the host name or IP address of the ATEM switcher that will send camera
+            commands via the SDI OUT/REF IN port. None if unspecified. (optional)
+        :param bool try_when_disconnected: Automatically attempt to reconnect camera on next command if
+            previous REST command failed. False if unspecified. (optional)
+
+        """
+
+        self.try_when_disconnected=try_when_disconnected
         self.host_or_ipaddr=host_or_ipaddr
-        if name is None:
-            name = randomword(8)
-        self.name = name
+        if camera_name is None:
+            self.name = randomword(8)
+        self.name = camera_name
+        self.control_ATEM_ipaddr = control_ATEM_ipaddr
         self.lens = BMCCLens(self)
         self.transport = BMCCTransport(self)
         self.system = BMCCSystem(self)

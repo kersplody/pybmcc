@@ -23,6 +23,11 @@ class BMCCAudio:
     channel_available = []
 
     def __init__(self, bmcc_camera):
+        """Create BMCCAudio REST Controller Object
+
+        :param BMCCCamera bmcc_camera: the camera object to associate with an audio controller  (required)
+        """
+
         self.bmcc_camera = bmcc_camera
         self.audio_api_client = default_api.DefaultApi()
         self.audio_api_client.api_client.configuration.host=f"http://{bmcc_camera.host_or_ipaddr}/control/api/v1"
