@@ -51,7 +51,8 @@ class BMCCCamera:
     state_update_timestamp = 0
     try_when_disconnected = False
 
-    def __init__(self, host_or_ipaddr, camera_name=None, control_ATEM_ipaddr=None, try_when_disconnected = False):
+    def __init__(self, host_or_ipaddr, camera_name=None, control_ATEM_ipaddr=None, try_when_disconnected = False,
+                 update_state_on_init = False):
         """Create BMCCCamera Camera Controller Object. This is the main class to control cameras
 
         :param str host_or_ipaddr: the host name or IP address of the camera to control  (required)
@@ -61,7 +62,8 @@ class BMCCCamera:
             commands via the SDI OUT/REF IN port. None if unspecified. (optional)
         :param bool try_when_disconnected: Automatically attempt to reconnect camera on next command if
             previous REST command failed. False if unspecified. (optional)
-
+        :param bool update_state_on_init: Automatically update state on init. This should be set True if the AsyncAPI
+            is not in use. False if unspecified. (optional)
         """
 
         self.try_when_disconnected=try_when_disconnected
@@ -81,7 +83,11 @@ class BMCCCamera:
         self.media = BMCCMedia(self)
         self.color_correction = BMCCColorCorrection(self)
         self.preset = BMCCPreset(self)
-        self.update_state()
+        if update_state_on_init:
+            self.update_state()
+        else:
+            self.test_connection()
+
     def test_connection(self):
         try:
             url = f"http://{self.host_or_ipaddr}/control/documentation.html"
