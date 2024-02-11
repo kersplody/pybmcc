@@ -5,12 +5,13 @@
 BMCCCamera: Blackmagic Camera Control API manager class.
 Part of the BMCCCamera library.
 """
-
 import string
 import random
 import time
+
 import requests
 import urllib
+from PyBMCC.BMCCAsyncApi import BMCCWebsocketState
 from PyBMCC.BMCCTransport import BMCCTransport
 from PyBMCC.BMCCLens import BMCCLens
 from PyBMCC.BMCCSystem import BMCCSystem
@@ -45,6 +46,8 @@ class BMCCCamera:
     control_ATEM_ipaddr = None
 
     state = Enums.CameraState.UNKNOWN
+    async_state = BMCCWebsocketState.INIT
+    async_cam_state = {}
     state_update_timestamp = 0
     try_when_disconnected = False
 
@@ -52,7 +55,7 @@ class BMCCCamera:
         """Create BMCCCamera Camera Controller Object. This is the main class to control cameras
 
         :param str host_or_ipaddr: the host name or IP address of the camera to control  (required)
-        :param str name: the name to assign the camera (e.g. studio camera A). If unassigned, a random unique name
+        :param str camera_name: the name to assign the camera (e.g. studio camera A). If unassigned, a random unique name
             will be generated  (optional)
         :param str control_ATEM_ipaddr: the host name or IP address of the ATEM switcher that will send camera
             commands via the SDI OUT/REF IN port. None if unspecified. (optional)
@@ -64,8 +67,9 @@ class BMCCCamera:
         self.try_when_disconnected=try_when_disconnected
         self.host_or_ipaddr=host_or_ipaddr
         if camera_name is None:
-            self.name = randomword(8)
-        self.name = camera_name
+            self.name = f"{host_or_ipaddr}"
+        else:
+            self.name = camera_name
         self.control_ATEM_ipaddr = control_ATEM_ipaddr
         self.lens = BMCCLens(self)
         self.transport = BMCCTransport(self)
