@@ -3,7 +3,7 @@ import _thread
 import time
 from queue import Queue, Empty
 from PyBMCC.BMCCCamera import BMCCCamera
-from PyBMCC.BMCCAsyncApi import BMCCWebsocketClient,AsyncMessageProcessor
+from PyBMCC.AsyncApi import BMCCWebsocketClient,AsyncMessageProcessor
 
 if __name__ == "__main__":
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     _thread.start_new_thread(BMCCWebsocketClient, (dataQueueIn, dataQueueOut, camera, False))
     mp=AsyncMessageProcessor(camera)
 
-    for x in range(50):
+    for x in range(50):  #die after 50 messages
         try:
             message = dataQueueIn.get(timeout=5)
             mp.process_message(message)

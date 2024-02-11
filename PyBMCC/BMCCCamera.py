@@ -11,17 +11,17 @@ import time
 
 import requests
 import urllib
-from PyBMCC.BMCCAsyncApi import BMCCWebsocketState
-from PyBMCC.BMCCTransport import BMCCTransport
-from PyBMCC.BMCCLens import BMCCLens
-from PyBMCC.BMCCSystem import BMCCSystem
-from PyBMCC.BMCCEvent import BMCCEvent
-from PyBMCC.BMCCTimeline import BMCCTimeline
-from PyBMCC.BMCCVideo import BMCCVideo
-from PyBMCC.BMCCAudio import BMCCAudio
-from PyBMCC.BMCCMedia import BMCCMedia
-from PyBMCC.BMCCColorCorrection import BMCCColorCorrection
-from PyBMCC.BMCCPreset import BMCCPreset
+from PyBMCC.AsyncApi import BMCCWebsocketState
+from PyBMCC.TransportRestApi import BMCCTransport
+from PyBMCC.LensRestApi import BMCCLens
+from PyBMCC.SystemRestApi import BMCCSystem
+from PyBMCC.EventRestApi import BMCCEvent
+from PyBMCC.TimelineRestApi import BMCCTimeline
+from PyBMCC.VideoRestApi import BMCCVideo
+from PyBMCC.AudioRestApi import BMCCAudio
+from PyBMCC.MediaRestApi import BMCCMedia
+from PyBMCC.ColorCorrectionRestApi import BMCCColorCorrection
+from PyBMCC.PresetRestApi import BMCCPreset
 import PyBMCC.Enums as Enums
 import logging
 
