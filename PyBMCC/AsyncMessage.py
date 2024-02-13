@@ -153,3 +153,4 @@ class BMCCMessage:
     args: dict = None
     delay: float = 0.0
     ts: float = time.time()
+    callback: callable = None

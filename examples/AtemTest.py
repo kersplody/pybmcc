@@ -1,7 +1,7 @@
-from PyBMCC import ATEMApi, ALL_CAMERAS
+from PyBMCC import ATEM, ALL_CAMERAS
 import time
 
-atem=ATEMApi("10.0.11.201")
+atem=ATEM("10.0.11.201")
 
 
 

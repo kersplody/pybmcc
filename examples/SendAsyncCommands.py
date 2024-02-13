@@ -1,4 +1,4 @@
-from PyBMCC import AsyncMessageProcessor, BMCCMessage, BMCCMessageCommands, BMCCMessageType, ATEMApi, BMCCCamera
+from PyBMCC import AsyncMessageProcessor, BMCCMessage, BMCCMessageCommands, BMCCMessageType, ATEM, BMCCCamera
 from queue import Queue, Empty
 import time
 import logging
@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG)
 command_queue = Queue()
 src="test_driver"
 type=BMCCMessageType.ATEM
-atem=ATEMApi(atem_ipaddr="10.0.11.200")
+atem=ATEM(atem_ipaddr="10.0.11.200")
 mp = AsyncMessageProcessor(camera=None,atem=atem,command_queue=command_queue)
 mp.start_command_queue_thread()
 

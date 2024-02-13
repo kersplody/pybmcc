@@ -53,7 +53,7 @@ class BMCCAtemState(IntEnum):
     CLOSED = 5
     DISABLED = 6
 
-class ATEMApi(ATEMMax):
+class ATEM(ATEMMax):
 
     atem_ipaddr: str = None
     atem_auto_reconnect: bool = False

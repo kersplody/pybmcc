@@ -16,7 +16,7 @@ import time
 from queue import Queue
 
 from PyBMCC.AsyncMessage import BMCCConnectionState, BMCCMessage, BMCCMessageType, BMCCMessageCommands
-from PyBMCC.AtemApi import BMCCAtemState, ATEMApi, ALL_CAMERAS
+from PyBMCC.AtemApi import BMCCAtemState, ATEM, ALL_CAMERAS
 
 class BMCCWebsocketClient:
 
@@ -143,10 +143,12 @@ class AsyncMessageProcessor:
     def get_camname(self):
         return self.camera.name if self.camera else "None"
 
-    def __init__(self, camera,command_queue=None,atem=None):
+    def __init__(self, camera, command_queue=None, ws_queue=None, atem=None):
         self.camera=camera
         self.command_queue=command_queue
         self.atem=atem
+        self.ws_queue=ws_queue
+
     def process_property(self, property, value):
 
         if type(value) is OrderedDict:
@@ -236,6 +238,8 @@ class AsyncMessageProcessor:
                                 self.process_atem_command(command)
                             elif command.type == BMCCMessageType.REST:
                                 self.process_rest_command(command)
+                            elif command.type == BMCCMessageType.JSON:
+                                self.process_json_command(command)
                             time.sleep(command.delay)
                         else:
                             logging.warning(f"async: {command.command} is not a BMCCMessageCommand")
@@ -247,7 +251,13 @@ class AsyncMessageProcessor:
 
         _thread.start_new_thread(run, ())
 
-    def process_rest_command(self,command:BMCCMessage):
+    def process_json_command(self, command: BMCCMessage):
+        if self.ws_queue:
+            self.ws_queue.put(command.message)
+        else:
+            logging.warning("async: can't send JSON message because ws_queue is None")
+
+    def process_rest_command(self, command:BMCCMessage):
         from PyBMCC.Camera import BMCCCamera,REST_MODULE_MAP
         from PyBMCC.Enums import CameraState
 
@@ -285,6 +295,9 @@ class AsyncMessageProcessor:
                     f"async rest {self.camera.host_or_ipaddr}: LAST RESULT: {result}")
                 self.camera.last_command_result = result
                 self.camera.last_command_result_ts = time.time()
+            if command.callback:
+                if callable(command.callback):
+                    command.callback(**{'result':result,'command':command,'camera':self.camera})
 
         else:
             logging.warning(f"async rest {self.camera.host_or_ipaddr}: {command.command.name} is not an implemented REST command")
@@ -312,9 +325,12 @@ class AsyncMessageProcessor:
                         +f"{command.args['destination_device']}->{self.camera.atem_id}.")
                 command.args["destination_device"]=self.camera.atem_id
 
-        fn = getattr(ATEMApi, command.command.name, None)
+        fn = getattr(ATEM, command.command.name, None)
         if fn is not None:
             fn(self.atem , **command.args)
+            if command.callback:
+                if callable(command.callback):
+                    command.callback(**{'result':None,'command':command,'camera':self.camera})
         else:
             logging.warning(f"async atem {self.atem.atem_ipaddr}: {command.command.name} is not an implemented ATEM command")
 
