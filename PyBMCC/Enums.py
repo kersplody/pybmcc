@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
-from enum import Enum
+from enum import Enum, IntEnum
+import time
 
 UNKNOWN='UNKNOWN'
 

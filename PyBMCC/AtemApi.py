@@ -6,6 +6,8 @@ ATEMApi: Blackmagic Camera Control ATEM API.
 Part of the BMCCCamera library.
 """
 import math
+from enum import IntEnum
+from socket import socket, AF_INET, SOCK_STREAM
 
 from fxpmath import Fxp
 from PyATEMMax import ATEMMax
@@ -41,10 +43,22 @@ ATEM_CAMERA_PACKET_COUNT_64 = 13
 ATEM_CAMERA_PACKET_DATA = 16
 
 ALL_CAMERAS = 255
+
+class BMCCAtemState(IntEnum):
+    INIT = 0
+    CONNECTING = 1
+    CONNECTED = 2
+    DISCONNECTING = 3
+    DISCONNECTED = 4
+    CLOSED = 5
+    DISABLED = 6
+
 class ATEMApi(ATEMMax):
 
     atem_ipaddr: str = None
     atem_auto_reconnect: bool = False
+    state = BMCCAtemState.INIT
+
     def __init__(self,atem_ipaddr:str,autoconnect=True,atem_auto_reconnect=False):
         super().__init__()
         self.atem_ipaddr = atem_ipaddr
@@ -52,29 +66,43 @@ class ATEMApi(ATEMMax):
         if(autoconnect):
             self.atem_connect()
 
-    def atem_connect(self):
+    def atem_connect(self) -> bool:
         logging.debug(f"Connecting to ATEM {self.atem_ipaddr}...")
+        self.state=state = BMCCAtemState.CONNECTING
+
+        #check for a route to host before connection attempt
+        try:
+            testSocket = socket(AF_INET, SOCK_STREAM)
+            testSocket.settimeout(1)
+            testSocket.connect((self.atem_ipaddr, 21))
+            testSocket.detach()
+        except OSError as error:
+            logging.error(f"atem: can't connect to {self.atem_ipaddr}: {error}")
+            self.state = state = BMCCAtemState.DISCONNECTED
+            return False
+
         self.connect(self.atem_ipaddr)
-        self.waitForConnection(infinite=False, timeout=1.0)
+        connected=self.waitForConnection(infinite=False, timeout=1.0)
+        if connected:
+            self.state = BMCCAtemState.CONNECTED
+        else:
+            self.state = BMCCAtemState.DISCONNECTED
+        return connected
 
     def atem_disconnect(self):
         self.disconnect()
-        self.atem_connected = False
-
-
+        self.state = BMCCAtemState.DISCONNECTED
 
     def atem_camera_command_pre(self) -> bool:
-        if not self.connected:
+        if not self.state == BMCCAtemState.CONNECTED:
             if not self.atem_auto_reconnect:
-                return 1
+                return False
             self.atem_connect()
-            if self.connected:
-                return 0
-            return 1
-        return 0
+            if self.state == BMCCAtemState.CONNECTED:
+                return True
+            return False
+        return True
 
-    def atem_get_camera_packet_size(self):
-        return
     def atem_send_camera_command(self,
                                  destination_device: int,
                                  group_id: int,
@@ -134,7 +162,7 @@ class ATEMApi(ATEMMax):
     #########################################################################################
 
     # 0.0 Focus
-    def setCameraLensFocus(self,destination_device:int=ALL_CAMERAS, focus:float=0.0) -> int:
+    def set_camera_lens_focus(self,destination_device:int=ALL_CAMERAS, focus:float=0.0) -> int:
         """Set Camera Control Focus
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -151,13 +179,13 @@ class ATEMApi(ATEMMax):
             parameter_id=0,
             parameter_type=ATEM_CAMERA_DATATYPE_FIXED16,
             command_data_elements=1,
-            command_data=[getAtemFixed16(checkRange(focus,0.0,1.0,"LensFocus"))])
+            command_data=[get_atem_fixed16(check_range(focus,0.0,1.0,"LensFocus"))])
 
         self.atem_camera_command_post()
         return 0
 
     # 0.1 Autofocus
-    def setCameraLensAutofocus(self,destination_device:int=ALL_CAMERAS) -> int:
+    def do_camera_lens_autofocus(self,destination_device:int=ALL_CAMERAS) -> int:
         """Do Camera Control Autofocus
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -179,7 +207,7 @@ class ATEMApi(ATEMMax):
         return 0
 
     # 0.2 Aperture
-    def setCameraLensAperture(self,destination_device:int=ALL_CAMERAS, fstop:float=4.0) -> int:
+    def set_camera_lens_aperture(self,destination_device:int=ALL_CAMERAS, fstop:float=4.0) -> int:
         """Set Camera Control Aperture
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -198,13 +226,13 @@ class ATEMApi(ATEMMax):
             parameter_id=2,
             parameter_type=ATEM_CAMERA_DATATYPE_FIXED16,
             command_data_elements=1,
-            command_data=[getAtemFixed16(scaled_fstop)])
+            command_data=[get_atem_fixed16(scaled_fstop)])
 
         self.atem_camera_command_post()
         return 0
 
     # 0.3 Aperture Normalized
-    def setCameraLensApertureNormalized(self,destination_device:int=ALL_CAMERAS, iris:float=0.0) -> int:
+    def set_camera_lens_aperture_normalized(self,destination_device:int=ALL_CAMERAS, iris:float=0.0) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -221,13 +249,13 @@ class ATEMApi(ATEMMax):
             parameter_id=3,
             parameter_type=ATEM_CAMERA_DATATYPE_FIXED16,
             command_data_elements=1,
-            command_data=[getAtemFixed16(checkRange(iris,0.0,1.0,"LensApertureNormalized"))])
+            command_data=[get_atem_fixed16(check_range(iris,0.0,1.0,"LensApertureNormalized"))])
 
         self.atem_camera_command_post()
         return 0
 
     # 0.4 Aperture Ordinal
-    def setCameraLensApertureOrdinal(self,destination_device:int=ALL_CAMERAS, fstop_step:int=0) -> int:
+    def set_camera_lens_aperture_ordinal(self,destination_device:int=ALL_CAMERAS, fstop_step:int=0) -> int:
         """Set Camera Control Aperture Step
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -250,7 +278,7 @@ class ATEMApi(ATEMMax):
         return 0
 
     # 0.5 Auto Aperture
-    def setCameraLensAutoAperture(self,destination_device:int=ALL_CAMERAS) -> int:
+    def set_camera_lens_auto_aperture(self,destination_device:int=ALL_CAMERAS) -> int:
         """Do Camera Auto Aperture
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -272,7 +300,7 @@ class ATEMApi(ATEMMax):
         return 0
 
     # 0.6 OIS
-    def setCameraLensOIS(self,destination_device:int=ALL_CAMERAS, ois_enabled:bool=False) -> int:
+    def set_camera_lens_o_i_s(self,destination_device:int=ALL_CAMERAS, ois_enabled:bool=False) -> int:
         """Set Camera Lens OIS (Optical Image Stabilization) Enabled
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -295,7 +323,7 @@ class ATEMApi(ATEMMax):
         return 0
 
     # 0.7 Zoom Absolute
-    def setCameraLensAbsoluteZoom(self, destination_device: int = ALL_CAMERAS, zoom_mm: int = 0) -> int:
+    def set_camera_lens_absolute_zoom(self, destination_device: int = ALL_CAMERAS, zoom_mm: int = 0) -> int:
         """Set Camera Zoom Absolute
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -318,7 +346,7 @@ class ATEMApi(ATEMMax):
         return 0
 
     # 0.8 Zoom Normalized
-    def setCameraLensZoomNormalized(self, destination_device: int = ALL_CAMERAS, zoom: float = 0.0) -> int:
+    def set_camera_lens_zoom_normalized(self, destination_device: int = ALL_CAMERAS, zoom: float = 0.0) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -335,13 +363,13 @@ class ATEMApi(ATEMMax):
             parameter_id=8,
             parameter_type=ATEM_CAMERA_DATATYPE_FIXED16,
             command_data_elements=1,
-            command_data=[getAtemFixed16(checkRange(zoom, 0.0, 1.0, "LensZoomNormalized"))])
+            command_data=[get_atem_fixed16(check_range(zoom, 0.0, 1.0, "LensZoomNormalized"))])
 
         self.atem_camera_command_post()
         return 0
 
     # 0.9 Continuous Zoom Speed
-    def setCameraLensZoomContinuousSpeed(self, destination_device: int = ALL_CAMERAS, zoom_speed: float = 0.0) -> int:
+    def set_camera_lens_zoom_continuous_speed(self, destination_device: int = ALL_CAMERAS, zoom_speed: float = 0.0) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -358,7 +386,7 @@ class ATEMApi(ATEMMax):
             parameter_id=9,
             parameter_type=ATEM_CAMERA_DATATYPE_FIXED16,
             command_data_elements=1,
-            command_data=[getAtemFixed16(checkRange(zoom_speed, -1.0, 1.0, "LensZoomContinuousSpeed"))])
+            command_data=[get_atem_fixed16(check_range(zoom_speed, -1.0, 1.0, "LensZoomContinuousSpeed"))])
 
         self.atem_camera_command_post()
         return 0
@@ -368,7 +396,7 @@ class ATEMApi(ATEMMax):
     #########################################################################################
 
     # 1.5 Shutter Angle
-    def setCameraVideoExposure(self, destination_device: int = ALL_CAMERAS, exposure_us: int = 16666) -> int:
+    def set_camera_video_exposure(self, destination_device: int = ALL_CAMERAS, exposure_us: int = 16666) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -385,13 +413,13 @@ class ATEMApi(ATEMMax):
             parameter_id=5,
             parameter_type=ATEM_CAMERA_DATATYPE_INT32,
             command_data_elements=1,
-            command_data=[checkRange(exposure_us, 1, 42000, "VideoExposure")])
+            command_data=[check_range(exposure_us, 1, 42000, "VideoExposure")])
 
         self.atem_camera_command_post()
         return 0
 
     # 1.11 Shutter Angle
-    def setCameraVideoShutterAngle(self, destination_device: int = ALL_CAMERAS, angle: int = 360) -> int:
+    def set_camera_video_shutter_angle(self, destination_device: int = ALL_CAMERAS, angle: int = 360) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -408,14 +436,14 @@ class ATEMApi(ATEMMax):
             parameter_id=11,
             parameter_type=ATEM_CAMERA_DATATYPE_INT32,
             command_data_elements=1,
-            command_data=[checkRange(angle, 1, 360, "VideoShutterAngle")*100])
+            command_data=[check_range(angle, 1, 360, "VideoShutterAngle")*100])
 
         self.atem_camera_command_post()
         return 0
 
     # 1.12 Shutter Speed
 
-    def setCameraVideoShutterSpeed(self, destination_device: int = ALL_CAMERAS, speed: int = 60) -> int:
+    def set_camera_video_shutter_speed(self, destination_device: int = ALL_CAMERAS, speed: int = 60) -> int:
         """Set Camera Control Aperture Normalized
 
         :param:int camera_atem_id: Camera ATEM id. ALL_CAMERAS if unspecified (optional)
@@ -432,7 +460,7 @@ class ATEMApi(ATEMMax):
             parameter_id=12,
             parameter_type=ATEM_CAMERA_DATATYPE_INT32,
             command_data_elements=1,
-            command_data=[checkRange(speed, 0, 100000, "VideoShutterSpeed")])
+            command_data=[check_range(speed, 0, 100000, "VideoShutterSpeed")])
 
         self.atem_camera_command_post()
         return 0
@@ -442,7 +470,7 @@ class ATEMApi(ATEMMax):
     #########################################################################################
 
     #3.0 Overlay Enables
-    def setCameraOutputOverlayEnables(self, destination_device: int = ALL_CAMERAS,
+    def set_camera_output_overlay_enables(self, destination_device: int = ALL_CAMERAS,
                                       status:bool=False,
                                       frame_guide:bool=False,
                                       clean_feed:bool=False,
@@ -479,7 +507,7 @@ class ATEMApi(ATEMMax):
     #########################################################################################
 
     #4.1
-    def setCameraDisplayExposureTool(self, destination_device: int = ALL_CAMERAS,
+    def set_camera_display_exposure_tool(self, destination_device: int = ALL_CAMERAS,
                                       zebra:bool=False,
                                       focus_assist:bool=False,
                                       false_color:bool=False,
@@ -516,7 +544,7 @@ class ATEMApi(ATEMMax):
     #########################################################################################
 
     #10.1 Transport Mode
-    def setCameraMediaMode(self, destination_device: int = ALL_CAMERAS,
+    def set_camera_media_mode(self, destination_device: int = ALL_CAMERAS,
                            mode:int=0,
                            speed:int=1,
                            flags:int=1<<5,
@@ -536,18 +564,18 @@ class ATEMApi(ATEMMax):
 
         self.atem_camera_command_post()
         return 0
-    def setCameraMediaModeRecord(self,destination_device: int = ALL_CAMERAS):
-        self.setCameraMediaMode(destination_device=destination_device,mode=2)
-    def setCameraMediaModeIdle(self,destination_device: int = ALL_CAMERAS):
-        self.setCameraMediaMode(destination_device=destination_device,mode=0)
+    def set_camera_media_mode_record(self,destination_device: int = ALL_CAMERAS):
+        self.set_camera_media_mode(destination_device=destination_device,mode=2)
+    def set_camera_media_mode_idle(self,destination_device: int = ALL_CAMERAS):
+        self.set_camera_media_mode(destination_device=destination_device,mode=0)
 
-def getAtemFixed16(val:float=0.0):
+def get_atem_fixed16(val:float=0.0):
     fixed16 = Fxp(val, signed=True, n_word=16, n_frac=11)
     fixed16.rounding = 'around'
 
     return fixed16.val
 
-def checkRange(val,min,max,param):
+def check_range(val,min,max,param):
     if val<min:
         logging.warning(f"Parameter {param} is outside of permissible range of (f{min} to f{max})")
         return min

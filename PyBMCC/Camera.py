@@ -11,7 +11,7 @@ import time
 
 import requests
 import urllib
-from PyBMCC.AsyncApi import BMCCWebsocketState
+from PyBMCC.AsyncApi import BMCCConnectionState
 from PyBMCC.TransportRestApi import BMCCTransport
 from PyBMCC.LensRestApi import BMCCLens
 from PyBMCC.SystemRestApi import BMCCSystem
@@ -24,6 +24,19 @@ from PyBMCC.ColorCorrectionRestApi import BMCCColorCorrection
 from PyBMCC.PresetRestApi import BMCCPreset
 import PyBMCC.Enums as Enums
 import logging
+
+REST_MODULE_MAP = {
+    "audio" : BMCCAudio,
+    "color" : BMCCColorCorrection,
+    "events" : BMCCEvent,
+    "lens" : BMCCLens,
+    "media" : BMCCMedia,
+    "preset": BMCCPreset,
+    "system": BMCCSystem,
+    "timeline": BMCCTimeline,
+    "transport": BMCCTransport,
+    "video": BMCCVideo,
+}
 
 class BMCCCamera:
 
@@ -41,12 +54,17 @@ class BMCCCamera:
     video = None
     audio = None
     media = None
-    color_correction = None
+    color = None
     preset = None
     control_ATEM_ipaddr = None
 
+    last_command:str = None
+    last_command_ts:int = None
+    last_command_result:str = None
+    last_command_result_ts:int = None
+
     state = Enums.CameraState.UNKNOWN
-    async_state = BMCCWebsocketState.INIT
+    async_state = BMCCConnectionState.INIT
     async_cam_state = {}
     state_update_timestamp = 0
     try_when_disconnected = False
@@ -81,7 +99,7 @@ class BMCCCamera:
         self.video = BMCCVideo(self)
         self.audio = BMCCAudio(self)
         self.media = BMCCMedia(self)
-        self.color_correction = BMCCColorCorrection(self)
+        self.color = BMCCColorCorrection(self)
         self.preset = BMCCPreset(self)
         if update_state_on_init:
             self.update_state()
@@ -178,7 +196,3 @@ class BMCCCamera:
             # http://10.0.11.203/mounts/usb/X9%20Pro/1706224651.braw
             # http://10.0.11.203/mnt/usb16640/X9%20Pro/A010_02041219_C002.braw
             return f"http://{self.host_or_ipaddr}/mounts/usb/{eps[3]}/{eps[4]}"
-
-def randomword(length:int) -> str:
-   letters = string.ascii_lowercase
-   return ''.join(random.choice(letters) for i in range(length))

@@ -56,7 +56,7 @@ class BMCCMedia:
         self.primary_disk_id = result.device_name
         return result
 
-    def put_active(self,workingset_index=0):
+    def set_active(self,workingset_index=0):
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:

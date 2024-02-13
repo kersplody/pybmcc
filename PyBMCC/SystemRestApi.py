@@ -25,8 +25,6 @@ class BMCCSystem:
     max_off_speed_frame_rate = 0.0
     min_off_speed_frame_rate = 0.0
 
-    atem_id = -1
-
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
         self.system_api_client = default_api.DefaultApi()
@@ -230,7 +228,7 @@ class BMCCSystem:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex,False)
             return -1
-        self.atem_id=id
+        self.camera.atem_id=id
         return id
 
     def set_atem_id(self,atem_id:int):
@@ -265,6 +263,7 @@ class BMCCSystem:
             return -1
         if self.system_api_client.api_client.last_response.status==501:
             return -4
+        self.camera.atem_id = atem_id
         return 0
 
     def get_clips(self,only_last=False):

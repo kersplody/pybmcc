@@ -46,6 +46,9 @@ class BMCCLens:
         self.iris_stops=list(iris_stops)
         return self.iris_stops
 
+    def get_aperture_stops(self,**kwargs):
+        return self.get_iris_stops(**kwargs)
+
     def get_iris(self) -> float:
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
@@ -61,9 +64,14 @@ class BMCCLens:
         self.aperture_number=result.aperture_number
         return result.aperture_stop
 
-    def set_iris(self, aperture_stop:float=None, normalised:float=None, aperture_number:int=None) -> int:
+    def get_aperture(self) -> float:
+        return self.get_iris()
+
+    def set_iris(self, aperture_stop:float=None, normalised:float=None, aperture_number:int=None, fstop:float=None) -> int:
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
+        if fstop:
+            aperture_stop = fstop
         if aperture_stop is None and normalised is None and aperture_number is None:
             logging.warning("One of apertureStop, normalised, or apertureNumber must be set")
             return -3
@@ -76,6 +84,9 @@ class BMCCLens:
             self.bmcc_camera.handle_exception(ex)
             return -1
         return 0
+
+    def set_aperture(self, **kwargs) -> float:
+        return self.set_iris(**kwargs)
 
     def get_zoom(self) -> float:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
@@ -139,3 +150,6 @@ class BMCCLens:
             self.bmcc_camera.handle_exception(ex)
             return -1
         return 0
+
+    def autofocus(self) -> int:
+        return self.do_auto_focus()

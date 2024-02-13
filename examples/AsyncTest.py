@@ -2,8 +2,7 @@ import logging
 import _thread
 import time
 from queue import Queue, Empty
-from PyBMCC.BMCCCamera import BMCCCamera
-from PyBMCC.AsyncApi import BMCCWebsocketClient,AsyncMessageProcessor
+from PyBMCC import BMCCWebsocketClient,AsyncMessageProcessor,BMCCCamera
 
 if __name__ == "__main__":
 

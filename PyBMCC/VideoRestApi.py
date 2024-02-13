@@ -172,7 +172,8 @@ class BMCCVideo:
             self.bmcc_camera.handle_exception(ex)
             return -1
         return result
-    def get_nd_filter_display_mode(self,stop:int=None) -> int:
+
+    def set_nd_filter_display_mode(self,stop:int=None) -> int:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
@@ -197,6 +198,7 @@ class BMCCVideo:
             self.bmcc_camera.handle_exception(ex)
             return -1
         return result
+
     def set_shutter(self,shutter_speed=None, shutter_angle=None) -> int:
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
