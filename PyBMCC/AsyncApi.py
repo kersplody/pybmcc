@@ -143,7 +143,7 @@ class AsyncMessageProcessor:
     def get_camname(self):
         return self.camera.name if self.camera else "None"
 
-    def __init__(self, camera, command_queue=None, ws_queue=None, atem=None):
+    def __init__(self, camera=None, command_queue=None, ws_queue=None, atem=None):
         self.camera=camera
         self.command_queue=command_queue
         self.atem=atem
@@ -216,9 +216,13 @@ class AsyncMessageProcessor:
             f"process_async_message EVENT: CAM {message.src} EVENT: {m['data']['action']} {m['data']['property']}:{m['data']['value']}")
         self.process_property(m['data']['property'], m['data']['value'])
 
-    def start_command_queue_thread(self):
+    def start_command_queue_processing(self):
         if self.command_queue==None:
             logging.warning("No command_queue is defined (is None). Not starting thread.")
+            return
+
+        if self.command_queue_thread_running:
+            logging.error("Command Queue already running. Not starting thread.")
             return
 
         def run(*args):

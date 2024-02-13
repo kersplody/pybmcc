@@ -10,7 +10,7 @@ src="test_driver"
 type=BMCCMessageType.ATEM
 atem=ATEM(atem_ipaddr="10.0.11.200")
 mp = AsyncMessageProcessor(camera=None,atem=atem,command_queue=command_queue)
-mp.start_command_queue_thread()
+mp.start_command_queue_processing()
 
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.get_camera_color_lift,delay=1.0))
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.do_camera_lens_autofocus,delay=1.0))
@@ -24,7 +24,7 @@ atem.disconnect()
 
 type = BMCCMessageType.REST
 mp = AsyncMessageProcessor(camera=BMCCCamera("10.0.11.203"),atem=None,command_queue=command_queue)
-mp.start_command_queue_thread()
+mp.start_command_queue_processing()
 
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.get_camera_color_lift))
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.do_camera_lens_autofocus,delay=1.0))
