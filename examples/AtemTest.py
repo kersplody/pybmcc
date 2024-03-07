@@ -1,12 +1,12 @@
 from PyBMCC import ATEM, ALL_CAMERAS
 import time
 
-atem=ATEM("10.0.11.201")
+atem=ATEM("10.0.11.200")
 
 
 
 #0.0
-atem.set_camera_lens_focus(destination_device=ALL_CAMERAS,focus=0.5)
+atem.set_camera_lens_focus(destination_device=4,focus=0.5)
 time.sleep(1)
 #0.1
 atem.do_camera_lens_autofocus()

@@ -74,7 +74,7 @@ class ATEM(ATEMMax):
         try:
             testSocket = socket(AF_INET, SOCK_STREAM)
             testSocket.settimeout(1)
-            testSocket.connect((self.atem_ipaddr, 21))
+            testSocket.connect((self.atem_ipaddr, 9994))
             testSocket.detach()
         except OSError as error:
             logging.error(f"atem: can't connect to {self.atem_ipaddr}: {error}")
@@ -96,12 +96,12 @@ class ATEM(ATEMMax):
     def atem_camera_command_pre(self) -> bool:
         if not self.state == BMCCAtemState.CONNECTED:
             if not self.atem_auto_reconnect:
-                return False
+                return True
             self.atem_connect()
             if self.state == BMCCAtemState.CONNECTED:
-                return True
-            return False
-        return True
+                return False
+            return True
+        return False
 
     def atem_send_camera_command(self,
                                  destination_device: int,

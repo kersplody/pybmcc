@@ -28,11 +28,9 @@ mp.start_command_queue_processing()
 
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.get_camera_color_lift))
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.do_camera_lens_autofocus,delay=1.0))
-command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.get_camera_lens_aperture_stops,delay=1.0))
+command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.get_camera_lens_aperture_stops,delay=10.0))
 command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.set_camera_lens_aperture,args={'fstop':2.6}))
-#command_queue.put(BMCCMessage(src=src,type=type,command=BMCCMessageCommands.set_camera_video_shutter_angle,args={'angle':360},delay=1.0))
-command_queue.put(None)
-time.sleep(1)
+
 while mp.command_queue_thread_running:
     time.sleep(1)
 

@@ -19,6 +19,7 @@ class BMCCMedia:
     remaining_space = 0
     clip_count = 0
     disk_update_timestamp = 0
+    device_format_key = None
 
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
@@ -104,15 +105,16 @@ class BMCCMedia:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex)
             return -1
+        self.device_format_key=result.key
         return result.key
 
-    def do_device_format(self,device_name=None,key=None, filesystem=None, volume=None):
+    def do_device_format(self,key=None, filesystem=None, device_name=None, volume=None):
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
             from MediaControl.models.device_name_doformat_body import DeviceNameDoformatBody
             body = DeviceNameDoformatBody(key=key, filesystem=filesystem, volume=volume)
-            result = self.media_api_client.media_devices_device_name_doformat_put(body=body)
+            result = self.media_api_client.media_devices_device_name_doformat_put(device_name=device_name,body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:

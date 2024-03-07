@@ -110,7 +110,7 @@ class BMCCLens:
         try:
             from LensControl.models.lens_zoom_body import LensZoomBody
             body = LensZoomBody(focal_length, normalised)
-            result = self.lens_api_client.lens_iris_put(body=body)
+            result = self.lens_api_client.lens_zoom_put(body=body)
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex)
             return -1

@@ -63,7 +63,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_gain_body import VideoGainBody
             body = VideoGainBody(gain=gain)
-            result = self.video_api_client.video_gain_set(body=body)
+            result = self.video_api_client.video_gain_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:

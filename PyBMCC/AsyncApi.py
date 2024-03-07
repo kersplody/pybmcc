@@ -14,9 +14,12 @@ import logging
 import _thread
 import time
 from queue import Queue
+import re
 
 from PyBMCC.AsyncMessage import BMCCConnectionState, BMCCMessage, BMCCMessageType, BMCCMessageCommands
 from PyBMCC.AtemApi import BMCCAtemState, ATEM, ALL_CAMERAS
+
+CC2SC = re.compile(r'(?<!^)(?=[A-Z])')
 
 class BMCCWebsocketClient:
 
@@ -172,9 +175,13 @@ class AsyncMessageProcessor:
         else:
             logging.debug("Processing " + str(message.message))
         if message.type == BMCCMessageType.CAMSTATE:
-            self.camera.async_state = message.message
-            logging.debug(
+            try:
+                self.camera.async_state = BMCCConnectionState[message.message]
+                logging.debug(
                 "process_async_message CAMSTATE: CAM " + message.src + " State changed to: " + str(message.message))
+            except KeyError:
+                logging.error(
+                    f"process_async_message GOT INVALID STATE {message.message}")
             return
         m = json.JSONDecoder(object_pairs_hook=OrderedDict).decode(message.message)
         if 'type' not in m:
@@ -262,7 +269,7 @@ class AsyncMessageProcessor:
             logging.warning("async: can't send JSON message because ws_queue is None")
 
     def process_rest_command(self, command:BMCCMessage):
-        from PyBMCC.Camera import BMCCCamera,REST_MODULE_MAP
+        from PyBMCC.Camera import REST_MODULE_MAP
         from PyBMCC.Enums import CameraState
 
         if self.camera is None:
@@ -286,8 +293,22 @@ class AsyncMessageProcessor:
         if not command.args:
             command.args = {}
 
-        fn = getattr(REST_MODULE_MAP[cat], cmd, None)
-        obj= getattr(self.camera, cat, None)
+        #if timestamp field, we are cloning. Remove ts and convert keys to snake case
+        if 'ts' in command.args:
+            newargs = {}
+            for key, value in command.args.items():
+                sc=CC2SC.sub('_', key).lower()
+                newargs[sc]=value
+            del newargs['ts']
+            command.args=newargs
+
+        try:
+            fn = getattr(REST_MODULE_MAP[cat], cmd, None)
+            obj= getattr(self.camera, cat, None)
+        except AttributeError:
+            logging.error(
+                f"async rest {self.camera.host_or_ipaddr}: {command.command.name} not found. FIXME.")
+            return
 
         if fn is not None and obj is not None:
             if cmd_split[0] == "get":
