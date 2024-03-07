@@ -228,10 +228,10 @@ class BMCCSystem:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex,False)
             return -1
-        self.camera.atem_id=id
+        self.bmcc_camera.atem_id=id
         return id
 
-    def set_atem_id(self,atem_id:int):
+    def set_atem_id(self,atem_id:int=1):
         if self.bmcc_camera.state!=Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
@@ -263,7 +263,7 @@ class BMCCSystem:
             return -1
         if self.system_api_client.api_client.last_response.status==501:
             return -4
-        self.camera.atem_id = atem_id
+        self.bmcc_camera.atem_id = atem_id
         return 0
 
     def get_clips(self,only_last=False):
