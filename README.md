@@ -119,6 +119,15 @@ This section documents erreta in version 0.1.0 of the Blackmagic REST API
 **PresetControl**
 
 - All methods are missing an OpenAPI operationId
+- Post method expects Content-Disposition. Example
+
+
+    curl -X 'POST' \
+    'http://10.0.11.201/control/api/v1/presets' \
+    'accept: application/json' \
+    -H 'Content-Type: application/octet-stream' \
+    -H 'Content-Disposition: attachment; filename=Preset 1.cset' \
+    --data-binary '@Preset 1.cset'
 
 **VideoControl**
 

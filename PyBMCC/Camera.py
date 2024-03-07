@@ -109,7 +109,7 @@ class BMCCCamera:
     def test_connection(self):
         try:
             url = f"http://{self.host_or_ipaddr}/control/documentation.html"
-            r = requests.head(url,timeout=1)
+            r = requests.head(url,timeout=.1)
             if r.status_code == 400:
                 self.mark_connected()
             else:

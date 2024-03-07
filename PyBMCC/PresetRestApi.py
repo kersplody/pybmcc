@@ -94,13 +94,11 @@ class BMCCPreset:
             return -1
         return 0
 
-    def delete_preset(self,preset_name:str,preset=None):
+    def delete_preset(self,preset_name:str=None):
         if self.bmcc_camera.state != Enums.CameraState.CONNECTED and not self.bmcc_camera.try_when_disconnected:
             return -2
         try:
-            from PresetControl.models.active_preset import ActivePreset
-            body = ActivePreset(preset=preset)
-            result = self.preset_api_client.presets_preset_name_delete(body=body)
+            result = self.preset_api_client.presets_preset_name_delete(preset_name=preset_name)
         except ApiException as ex:
             return -4
         except Exception as ex:

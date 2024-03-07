@@ -47,7 +47,7 @@ class BMCCWebsocketClient:
         self.inputQueue.put(BMCCMessage(self.get_camname(), BMCCMessageType.EVENT, message))
 
     def on_error(self, ws, error):
-        logging.error("ws: {} :GOT_ERR {}\r".format(self.get_camname(),error))
+        logging.debug("ws: {} :GOT_ERR {}\r".format(self.get_camname(),error))
 
     def on_close(self, ws, close_status_code, close_msg):
         # clear the queues
