@@ -105,6 +105,7 @@ class BMCCCamera:
             self.update_state()
         else:
             self.test_connection()
+        self.async_cam_state={}
 
     def test_connection(self):
         try:

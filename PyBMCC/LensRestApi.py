@@ -29,9 +29,12 @@ class BMCCLens:
         self.bmcc_camera = bmcc_camera
         self.lens_api_client = default_api.DefaultApi()
         self.lens_api_client.api_client.configuration.host=f"http://{bmcc_camera.host_or_ipaddr}/control/api/v1"
+        self.iris_stops = []
 
     def get_iris_stops(self) -> list[float]:
         iris_stops=list()
+        self.get_iris()
+        current_iris=self.aperture_normalised
 
         self.set_iris(normalised=0.0)
         time.sleep(.5)
@@ -44,6 +47,9 @@ class BMCCLens:
                 iris_stops.append(stop)
 
         self.iris_stops=list(iris_stops)
+        self.set_iris(normalised=current_iris)
+        time.sleep(.5)
+        self.get_iris()
         return self.iris_stops
 
     def get_aperture_stops(self,**kwargs):
