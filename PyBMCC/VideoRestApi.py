@@ -89,7 +89,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_white_balance_body import VideoWhiteBalanceBody
             body = VideoWhiteBalanceBody(white_balance=white_balance)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_white_balance_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:
@@ -127,7 +127,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_white_balance_tint_body import VideoWhiteBalanceTintBody
             body = VideoWhiteBalanceTintBody(white_balance_tint=white_balance_tint)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_white_balance_tint_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:
@@ -153,7 +153,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_nd_filter_body import VideoNdFilterBody
             body = VideoNdFilterBody(stop=None)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_nd_filter_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:
@@ -179,7 +179,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_nd_filter_body import VideoNdFilterBody
             body = VideoNdFilterBody(stop=stop)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_nd_filter_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:
@@ -205,7 +205,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_shutter_body import VideoShutterBody
             body = VideoShutterBody(shutter_speed=shutter_speed, shutter_angle=shutter_angle)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_shutter_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:
@@ -231,7 +231,7 @@ class BMCCVideo:
         try:
             from VideoControl.models.video_auto_exposure_body import VideoAutoExposureBody
             body = VideoAutoExposureBody(mode=None)
-            result = self.video_api_client.video_iso_put(body=body)
+            result = self.video_api_client.video_auto_exposure_put(body=body)
         except ApiException as ex:
             return -4
         except Exception as ex:

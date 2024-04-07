@@ -24,6 +24,7 @@ class BMCCSystem:
     off_speed_frame_rate = 0.0
     max_off_speed_frame_rate = 0.0
     min_off_speed_frame_rate = 0.0
+    clip_list = None
 
     def __init__(self, bmcc_camera):
         self.bmcc_camera = bmcc_camera
@@ -306,6 +307,7 @@ class BMCCSystem:
         except Exception as ex:
             self.bmcc_camera.handle_exception(ex,False)
             return -1
+        self.clip_list=result['clipList']
         if only_last:
             if 'clipList' not in result:
                 return -1
